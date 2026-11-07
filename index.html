@@ -617,7 +617,7 @@ function joyBouge(e){
 function demarrerEntretien(){
   if (entretien) return;
   envoyer(consigne);
-  entretien = setInterval(() => envoyer(consigne), 150);
+  entretien = setInterval(() => envoyer(consigne), 300);
 }
 function arreterJoy(){
   joyActif = false; joy.classList.remove("actif"); knob.style.transform = "";
@@ -675,7 +675,7 @@ document.querySelectorAll("[data-test]").forEach(b => b.onclick = () => {
   const cmd = t === "g" ? regler(40, 0) : t === "d" ? regler(0, 40) : moteurs(1, 0, 40);
   let n = 0;
   envoyer(cmd);
-  test = setInterval(() => { if (++n >= 7) { clearInterval(test); envoyer("M,0,0"); } else envoyer(cmd); }, 150);
+  test = setInterval(() => { if (++n >= 4) { clearInterval(test); envoyer("M,0,0"); } else envoyer(cmd); }, 300);
 });
 
 // Émotions (aperçu de l'écran du robot)
