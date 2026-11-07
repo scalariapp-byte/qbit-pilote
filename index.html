@@ -3,282 +3,360 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#10161c">
+<meta name="theme-color" content="#0e1419">
 <title>Qbit Pilote</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout : une console de pilotage verticale, une carte par fonction, le joystick toujours en haut */
 :root{
-  --bg:#10161c; --panel:#18212a; --line:#2a3642; --fg:#e6edf2; --muted:#8a9aa8;
-  --accent:#36c2b4; --accent-ink:#06201d; --warn:#f2a33a; --danger:#ef5b5b; --led:#ff4f3a;
-  --f-display:"Chakra Petch",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
-  color-scheme:dark;
+  --bg:#0e1419; --panel:#161f27; --panel2:#1c2731; --line:#283542; --fg:#e8eef3; --muted:#8597a6;
+  --accent:#36c2b4; --accent-ink:#04211d; --warn:#f2a33a; --danger:#ef5b5b; --ok:#4cd07d;
+  --r:16px; color-scheme:dark;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 var(--f-body);-webkit-tap-highlight-color:transparent}
-body{padding:env(safe-area-inset-top,0) max(14px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
-main{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 4px}
-h1{font:700 1.5rem/1 var(--f-display);letter-spacing:.04em;margin:0}
-h1 small{display:block;font:500 .7rem var(--f-mono);color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
-h2{font:700 .8rem var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 10px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
-button{font:600 .9rem var(--f-body);color:var(--fg);background:#22303b;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;touch-action:manipulation}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 10px;cursor:pointer;touch-action:manipulation;user-select:none}
 button:active{transform:scale(.97)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-button.stop{background:var(--danger);border-color:var(--danger);color:#fff;font-family:var(--f-display);letter-spacing:.1em}
 button:disabled{opacity:.45}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-.grid{display:grid;gap:8px}
-.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
-#etat{display:flex;align-items:center;gap:8px;font:500 .8rem var(--f-mono);color:var(--muted)}
-#etat i{width:10px;height:10px;border-radius:50%;background:var(--danger);display:inline-block}
-#etat.ok i{background:var(--accent);box-shadow:0 0 10px var(--accent)}
-#alerte{background:var(--danger);color:#fff;border-radius:14px;padding:14px;font:700 1.1rem var(--f-display);letter-spacing:.06em;display:flex;justify-content:space-between;align-items:center;gap:10px}
-#avert{background:#3a2a12;border:1px solid var(--warn);color:#ffd9a3;border-radius:14px;padding:12px 14px;font-size:.9rem}
-/* Joystick */
-.pad{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:center}
-#joy{width:100%;max-width:230px;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#1d2832 0 55%,#141c23 56%);border:2px solid var(--line);position:relative;touch-action:none;margin:auto}
-#joy::before,#joy::after{content:"";position:absolute;background:var(--line)}
-#joy::before{left:50%;top:10%;bottom:10%;width:1px}
-#joy::after{top:50%;left:10%;right:10%;height:1px}
-#knob{position:absolute;width:34%;height:34%;left:33%;top:33%;border-radius:50%;background:var(--accent);box-shadow:0 0 0 6px rgba(54,194,180,.18);z-index:1;pointer-events:none}
-.side{display:flex;flex-direction:column;gap:10px;min-width:0}
-label{font-size:.82rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.danger{background:var(--danger);border-color:var(--danger);color:#fff;font-weight:800;letter-spacing:.06em}
+input[type=text]{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0;flex:1}
 input[type=range]{width:100%;accent-color:var(--accent)}
-.check{flex-direction:row;align-items:center;gap:8px}
-.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-/* Tableau de bord */
-.dash{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.dash div{background:#121a21;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
-.dash b{display:block;font:500 1.15rem var(--f-mono);font-variant-numeric:tabular-nums}
-.dash span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-/* Matrice 5x5 */
-.emo{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px}
-.emo small{font-size:.72rem;color:var(--muted)}
+
+/* En-tete */
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:rgba(14,20,25,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.marque{font-weight:800;font-size:17px;letter-spacing:.02em}
+.etat{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;flex:1;min-width:0}
+.etat span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.point{width:9px;height:9px;border-radius:50%;background:var(--danger);flex:none}
+.etat.ok .point{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.etat.attente .point{background:var(--warn)}
+#btnCo,#btnStop{padding:9px 12px;font-size:14px}
+
+main{padding:14px 16px;max-width:560px;margin:0 auto}
+.avert{background:#3a2a12;border:1px solid var(--warn);color:#ffd9a0;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+.carte{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+h2{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.aide{color:var(--muted);font-size:13px;margin:8px 0 0}
+.grille{display:grid;gap:8px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.ligne{display:flex;gap:8px;align-items:center}
+
+/* Telemetrie */
+.tele{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tele div{background:var(--panel2);border-radius:12px;padding:8px 4px;text-align:center;min-width:0}
+.tele small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.tele b{font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.radar{height:8px;border-radius:4px;background:var(--panel2);margin-top:10px;overflow:hidden}
+.radar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--danger),var(--warn),var(--ok));transition:width .3s}
+.direct{font-size:12px;color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;gap:8px}
+
+/* Joystick */
+.joy{position:relative;width:min(78vw,320px);aspect-ratio:1;margin:6px auto 4px;border-radius:50%;background:radial-gradient(circle,var(--panel2) 0 58%,var(--panel) 59%);border:1px solid var(--line);touch-action:none}
+.joy::before,.joy::after{content:"";position:absolute;background:var(--line)}
+.joy::before{left:50%;top:12%;bottom:12%;width:1px}
+.joy::after{top:50%;left:12%;right:12%;height:1px}
+.knob{position:absolute;left:50%;top:50%;width:34%;aspect-ratio:1;margin:-17% 0 0 -17%;border-radius:50%;background:var(--accent);box-shadow:0 6px 22px rgba(54,194,180,.35);z-index:1;transition:transform .08s}
+.joy.actif .knob{transition:none}
+.fleche{position:absolute;color:var(--muted);font-size:12px;z-index:0;left:50%;transform:translateX(-50%)}
+.vit{display:flex;align-items:center;gap:10px;margin-top:10px}
+.vit b{min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Modes */
+.mode{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;padding:12px}
+.mode b{font-size:15px}
+.mode small{color:var(--muted);font-size:12px}
+.mode.on small{color:var(--accent-ink)}
+
+/* Emotions */
+.emo{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px}
 .mx{display:grid;grid-template-columns:repeat(5,7px);gap:2px}
-.mx i{width:7px;height:7px;border-radius:2px;background:#2a3540}
-.mx i.l{background:var(--led);box-shadow:0 0 4px var(--led)}
-.sw{height:38px;border-radius:10px;border:2px solid var(--line);padding:0}
-#txt{flex:1;min-width:0;font:15px var(--f-body);background:#121a21;color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px}
-#ecoute{font:500 .82rem var(--f-mono);color:var(--muted);min-height:1.3em;margin-top:8px}
-#journal{font:500 .75rem var(--f-mono);color:var(--muted);max-height:90px;overflow:auto;white-space:pre-wrap;margin:8px 0 0}
-.hint{font-size:.8rem;color:var(--muted);margin:8px 0 0}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.mx i{width:7px;height:7px;border-radius:2px;background:#26323d}
+.mx i.l{background:#ff4f3a;box-shadow:0 0 4px #ff4f3a}
+.emo small{font-size:11px;color:var(--muted)}
+.puces{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.puces button{padding:7px 11px;font-size:13px;border-radius:999px}
+
+/* Reglages */
+.interr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.interr:first-child{border-top:0}
+.interr input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+pre{margin:0;max-height:220px;overflow:auto;font:12px/1.45 ui-monospace,Consolas,monospace;color:var(--muted);white-space:pre-wrap}
+
+/* Navigation du bas */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(14,20,25,.96);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav button{background:none;border:0;border-radius:10px;padding:8px 2px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button svg{width:22px;height:22px}
+nav button.on{color:var(--accent);background:rgba(54,194,180,.1);font-weight:600}
+
+/* Alerte gardien */
+.alerte{position:fixed;inset:0;z-index:20;background:rgba(120,10,10,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
+.alerte b{font-size:28px;letter-spacing:.05em}
 </style>
 </head>
 <body>
+<header>
+  <div class="marque">Qbit</div>
+  <div class="etat" id="etat"><i class="point"></i><span>Déconnecté</span></div>
+  <button id="btnStop" class="danger" hidden>STOP</button>
+  <button id="btnCo" class="primary">Connecter</button>
+</header>
+
 <main>
-  <header>
-    <h1>Qbit Pilote<small>micro:bit · Bluetooth</small></h1>
-    <div id="etat"><i></i><span>Déconnecté</span></div>
-  </header>
+  <div class="avert" id="avert" hidden></div>
 
-  <div id="avert" hidden></div>
-  <div id="alerte" hidden><span id="alerteTxt">INTRUS DÉTECTÉ</span><button id="alerteOk">OK</button></div>
+  <!-- PILOTER -->
+  <section data-onglet="piloter">
+    <div class="carte">
+      <div class="tele">
+        <div><small>Distance</small><b id="tDist">--</b></div>
+        <div><small>Obstacle</small><b id="tObs">--</b></div>
+        <div><small>Temp.</small><b id="tTemp">--</b></div>
+        <div><small>Batterie</small><b id="tBat">--</b></div>
+      </div>
+      <div class="radar"><i id="radar"></i></div>
+      <div class="direct"><span id="direct">Pas connecté</span><span id="modeTxt"></span></div>
+    </div>
+    <div class="carte">
+      <div class="joy" id="joy">
+        <span class="fleche" style="top:4%">avant</span>
+        <span class="fleche" style="bottom:4%">arrière</span>
+        <div class="knob" id="knob"></div>
+      </div>
+      <div class="vit"><span>Vitesse</span><input type="range" id="vit" min="20" max="100" step="5" value="50"><b id="vitTxt">50</b></div>
+      <div class="grille g2" style="margin-top:10px">
+        <button id="btnTilt">Pencher le téléphone</button>
+        <button id="btnStop2" class="danger">STOP</button>
+      </div>
+      <p class="aide">Pousse le rond pour avancer, tire pour reculer, glisse sur le côté pour tourner. Le robot s'arrête dès que tu lâches.</p>
+    </div>
+  </section>
 
-  <div class="row">
-    <button id="btnCo" class="primary" style="flex:1">Connecter le robot</button>
-    <button id="btnStop" class="stop" style="flex:1">STOP</button>
-  </div>
-
-  <section class="card">
-    <h2>Pilotage</h2>
-    <div class="pad">
-      <div id="joy" aria-label="Joystick"><div id="knob"></div></div>
-      <div class="side">
-        <label>Vitesse <span class="mono" id="vitTxt">50</span><input id="vit" type="range" min="15" max="100" value="50"></label>
-        <button id="btnTilt">Pencher le tél.</button>
-        <label class="check"><input id="inv" type="checkbox"> Inverser G/D</label>
-        <label class="check"><input id="invAv" type="checkbox"> Inverser AV/AR</label>
+  <!-- MODES -->
+  <section data-onglet="modes" hidden>
+    <div class="carte">
+      <h2>Modes automatiques</h2>
+      <div class="grille g2">
+        <button class="mode" data-mode="0"><b>Manuel</b><small>Tu pilotes</small></button>
+        <button class="mode" data-mode="1"><b>Animal</b><small>Suit ta main</small></button>
+        <button class="mode" data-mode="2"><b>Gardien</b><small>Alerte si on approche</small></button>
+        <button class="mode" data-mode="4"><b>Explorateur</b><small>Roule et évite les murs</small></button>
+        <button class="mode" data-mode="3" style="grid-column:span 2"><b>Majordome</b><small>Avance, salue et dit bonjour</small></button>
       </div>
     </div>
-    <p class="hint">Glisse le rond, ou active "Pencher le tél." et incline le téléphone comme un volant.</p>
-  </section>
-
-  <section class="card">
-    <h2>Modes</h2>
-    <div class="grid g2">
-      <button data-mode="0">Manuel</button>
-      <button data-mode="1">Animal</button>
-      <button data-mode="2">Gardien</button>
-      <button data-mode="4">Explorateur</button>
-      <button data-mode="3" style="grid-column:span 2">Majordome : arrive et salue</button>
+    <div class="carte">
+      <h2>Gardien</h2>
+      <div class="ligne"><div style="flex:1">Intrusions détectées : <b id="tIntr">0</b></div><button id="btnZero">Remettre à 0</button></div>
+      <p class="aide">En mode Gardien, le téléphone vibre et sonne dès que le robot voit quelqu'un approcher.</p>
     </div>
   </section>
 
-  <section class="card">
-    <h2>Tableau de bord</h2>
-    <div class="dash">
-      <div><span>Distance</span><b id="dDist">--</b></div>
-      <div><span>Capteurs IR</span><b id="dObs">--</b></div>
-      <div><span>Temp.</span><b id="dTemp">--</b></div>
-      <div><span>Batterie</span><b id="dBat">--</b></div>
-      <div><span>Mode</span><b id="dMode">--</b></div>
-      <div><span>Intrusions</span><b id="dIntr">0</b></div>
+  <!-- SHOW -->
+  <section data-onglet="show" hidden>
+    <div class="carte">
+      <h2>Émotions</h2>
+      <div class="grille g4" id="emos"></div>
     </div>
-    <div class="row" style="margin-top:8px"><button id="btnZero">Remettre les intrusions à 0</button></div>
-  </section>
-
-  <section class="card">
-    <h2>Émotions</h2>
-    <div class="grid g4" id="emos"></div>
-  </section>
-
-  <section class="card">
-    <h2>Message</h2>
-    <div class="grid g5" id="sws" hidden style="grid-template-columns:repeat(5,1fr)"></div>
-    <form class="row" id="fTxt">
-      <input id="txt" maxlength="38" placeholder="Texte à faire défiler" autocomplete="off">
-      <button class="primary">Envoyer</button>
-    </form>
-  </section>
-
-  <section class="card">
-    <h2>Spectacle</h2>
-    <div class="grid g4">
-      <button data-cmd="B">Révérence</button>
-      <button data-cmd="D,0">Balance</button>
-      <button data-cmd="D,1">Toupie</button>
-      <button data-cmd="D,2">Zigzag</button>
+    <div class="carte">
+      <h2>Message</h2>
+      <form class="ligne" id="fTxt">
+        <input type="text" id="txt" maxlength="30" placeholder="Texte à faire défiler" autocomplete="off">
+        <button class="primary">Afficher</button>
+      </form>
+      <div class="puces" id="puces"></div>
     </div>
-    <h2 style="margin-top:14px">Chorégraphie</h2>
-    <div class="grid g3">
-      <button id="btnRec">Enregistrer</button>
-      <button id="btnPlay">Rejouer</button>
-      <button id="btnLoop">En boucle</button>
+    <div class="carte">
+      <h2>Spectacle</h2>
+      <div class="grille g4">
+        <button data-cmd="B">Révérence</button>
+        <button data-cmd="D,0">Balance</button>
+        <button data-cmd="D,1">Toupie</button>
+        <button data-cmd="D,2">Zigzag</button>
+      </div>
+      <h2 style="margin-top:14px">Chorégraphie</h2>
+      <div class="grille g3">
+        <button id="btnRec">Enregistrer</button>
+        <button id="btnPlay">Rejouer</button>
+        <button id="btnLoop">En boucle</button>
+      </div>
+      <p class="aide" id="recInfo"></p>
     </div>
-    <p class="hint" id="recInfo">Appuie sur Enregistrer, pilote le robot, puis appuie à nouveau. Tout est rejoué avec le même rythme.</p>
   </section>
 
-  <section class="card">
-    <h2>Journal</h2>
-    <pre id="journal"></pre>
+  <!-- REGLAGES -->
+  <section data-onglet="reglages" hidden>
+    <div class="carte">
+      <h2>Régler les roues</h2>
+      <p class="aide" style="margin:0 0 10px">Appuie sur un test et regarde le robot. Si la mauvaise roue tourne, coche « Échanger ». Si une roue tourne vers l'arrière, coche son inversion.</p>
+      <div class="grille g3">
+        <button data-test="g">Roue gauche</button>
+        <button data-test="d">Roue droite</button>
+        <button data-test="a">Tout droit</button>
+      </div>
+      <div style="margin-top:8px">
+        <label class="interr">Échanger gauche et droite <input type="checkbox" id="optSwap"></label>
+        <label class="interr">Inverser la roue gauche <input type="checkbox" id="optInvG"></label>
+        <label class="interr">Inverser la roue droite <input type="checkbox" id="optInvD"></label>
+      </div>
+    </div>
+    <div class="carte">
+      <h2>Trajectoire</h2>
+      <div>Correction <b id="trimTxt">0</b></div>
+      <input type="range" id="optTrim" min="-30" max="30" step="2" value="0">
+      <p class="aide">Si le robot tire d'un côté en allant tout droit, déplace ce curseur vers l'autre côté.</p>
+      <div style="margin-top:10px">Force des virages <b id="sensTxt">60</b> %</div>
+      <input type="range" id="optSens" min="30" max="100" step="5" value="60">
+    </div>
+    <div class="carte">
+      <h2>Liaison</h2>
+      <div>Commandes reçues par le robot : <b id="tCmd">--</b></div>
+      <div>Commandes envoyées : <b id="tEnv">0</b></div>
+      <h2 style="margin-top:14px">Journal</h2>
+      <pre id="journal"></pre>
+    </div>
   </section>
 </main>
+
+<nav id="nav">
+  <button data-vers="piloter" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>Piloter</button>
+  <button data-vers="modes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="7" width="16" height="11" rx="3"/><path d="M12 7V4M9 12h.01M15 12h.01"/></svg>Modes</button>
+  <button data-vers="show"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>Show</button>
+  <button data-vers="reglages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Réglages</button>
+</nav>
+
+<div class="alerte" id="alerte" hidden>
+  <b>INTRUS DÉTECTÉ</b>
+  <div id="alerteTxt"></div>
+  <button id="alerteOk" class="primary" style="min-width:160px">OK</button>
+</div>
 
 <script>
 (() => {
 "use strict";
 const UART = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const $ = (id) => document.getElementById(id);
-const MODES = ["Manuel","Animal","Gardien","Majordome","Explorateur"];
+const MODES = { 0: "Manuel", 1: "Animal", 2: "Gardien", 3: "Majordome", 4: "Explorateur" };
 
-let device = null, rx = null, tx = null, connecte = false;
-let file = [], envoiEnCours = false, dernierM = null, rxBuf = "";
-let enregistrement = null, lecture = null, recu = false;
+// ---------- Réglages mémorisés sur le téléphone ----------
+const REG = { optSwap: false, optInvG: false, optInvD: true, optTrim: 0, optSens: 60, vit: 50 };
+try { Object.assign(REG, JSON.parse(localStorage.getItem("qbitReglages") || "{}")); } catch (e) {}
+function ecrireReg(){ try { localStorage.setItem("qbitReglages", JSON.stringify(REG)); } catch (e) {} }
+function afficherReg(){
+  for (const k of ["optSwap", "optInvG", "optInvD"]) $(k).checked = !!REG[k];
+  $("optTrim").value = REG.optTrim; $("trimTxt").textContent = (REG.optTrim > 0 ? "+" : "") + REG.optTrim;
+  $("optSens").value = REG.optSens; $("sensTxt").textContent = REG.optSens;
+  $("vit").value = REG.vit; $("vitTxt").textContent = REG.vit;
+}
+afficherReg();
+for (const k of ["optSwap", "optInvG", "optInvD"]) $(k).onchange = () => { REG[k] = $(k).checked; ecrireReg(); };
+for (const k of ["optTrim", "optSens", "vit"]) $(k).oninput = () => { REG[k] = +$(k).value; ecrireReg(); afficherReg(); };
 
-function log(t){ const j=$("journal"); j.textContent = (new Date().toLocaleTimeString()+"  "+t+"\n"+j.textContent).slice(0,3000); }
-function avert(t){ const a=$("avert"); a.textContent=t; a.hidden=!t; }
+// ---------- Journal ----------
+function log(t){ const j = $("journal"); j.textContent = (new Date().toLocaleTimeString() + "  " + t + "\n" + j.textContent).slice(0, 4000); }
+function avert(t){ $("avert").textContent = t; $("avert").hidden = !t; }
+
+// ---------- Onglets ----------
+function onglet(nom){
+  document.querySelectorAll("[data-onglet]").forEach(s => s.hidden = s.dataset.onglet !== nom);
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.vers === nom));
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("#nav button").forEach(b => b.onclick = () => onglet(b.dataset.vers));
 
 // ---------- Bluetooth ----------
+let device = null, rx = null, tx = null, connecte = false;
+let file = [], envoiEnCours = false, dernierM = null, rxBuf = "", nbEnv = 0;
+let derniereDonnee = 0, deconnexionVoulue = false, reconnexionEnCours = false;
+const attendre = (ms) => new Promise(r => setTimeout(r, ms));
+
 if (!("bluetooth" in navigator)) {
-  avert("Ce navigateur ne gère pas le Bluetooth web. Sur Android, ouvre cette page dans Chrome. Sur iPhone, utilise l'application gratuite Bluefy.");
+  avert("Ce navigateur ne gère pas le Bluetooth. Ouvre cette page dans Chrome sur Android.");
   $("btnCo").disabled = true;
 }
 
-function setEtat(ok, txt){
+function setEtat(ok, txt, attente){
   connecte = ok;
   $("etat").classList.toggle("ok", ok);
+  $("etat").classList.toggle("attente", !!attente);
   $("etat").querySelector("span").textContent = txt;
-  $("btnCo").textContent = ok ? "Déconnecter" : "Connecter le robot";
+  $("btnCo").textContent = ok ? "Déconnecter" : "Connecter";
+  $("btnCo").classList.toggle("primary", !ok);
+  $("btnStop").hidden = !ok;
 }
+function delai(p, ms, etape){ return Promise.race([p, new Promise((_, non) => setTimeout(() => non(new Error("pas de réponse (" + etape + ")")), ms))]); }
 
-function delai(promesse, ms, etape){
-  return Promise.race([promesse, new Promise((_, non) => setTimeout(() => non(new Error("délai dépassé à l'étape : " + etape)), ms))]);
-}
-function etape(t){ log(t); $("etat").querySelector("span").textContent = t; }
-
+function surDonnees(e){ recevoir(new TextDecoder().decode(e.target.value)); }
 async function ouvrirLiaison(){
-  etape("1/4 Connexion au robot...");
+  setEtat(false, "Connexion...", true);
   const serveur = await delai(device.gatt.connect(), 12000, "connexion");
-  etape("2/4 Recherche du service UART...");
-  const service = await delai(serveur.getPrimaryService(UART), 8000, "service UART");
-  etape("3/4 Lecture des canaux...");
+  const service = await delai(serveur.getPrimaryService(UART), 10000, "service UART");
   rx = tx = null;
   for (const c of await delai(service.getCharacteristics(), 8000, "canaux")) {
-    log("Canal " + c.uuid.slice(4, 8) + " : " + ["read","write","writeWithoutResponse","notify","indicate"].filter(k => c.properties[k]).join(" "));
     if (c.properties.write || c.properties.writeWithoutResponse) rx = c;
     if (c.properties.indicate || c.properties.notify) tx = c;
   }
   if (!rx || !tx) throw new Error("canaux UART introuvables");
-  etape("4/4 Abonnement aux infos du robot...");
+  tx.removeEventListener("characteristicvaluechanged", surDonnees);
+  tx.addEventListener("characteristicvaluechanged", surDonnees);
   await delai(tx.startNotifications(), 8000, "abonnement");
-  tx.addEventListener("characteristicvaluechanged", (e) => recevoir(new TextDecoder().decode(e.target.value)));
-}
-
-// Reconnexion automatique si le robot se déconnecte sans qu'on l'ait demandé
-let deconnexionVoulue = false, reconnexionEnCours = false, debutConnexion = 0;
-async function surDeconnexion(){
-  const duree = Math.round((performance.now() - debutConnexion) / 1000);
-  const etaitConnecte = connecte;
-  setEtat(false, "Déconnecté"); rx = tx = null; file = []; dernierM = null;
-  if (!etaitConnecte) return;
-  log("Robot déconnecté après " + duree + " s");
-  if (deconnexionVoulue || reconnexionEnCours || !device) return;
-  reconnexionEnCours = true;
-  for (let essai = 1; essai <= 5; essai++) {
-    setEtat(false, "Reconnexion " + essai + "/5...");
-    await new Promise(r => setTimeout(r, 2500));
-    try {
-      await ouvrirLiaison();
-      debutConnexion = performance.now();
-      setEtat(true, device.name || "Connecté");
-      log("Reconnecté (essai " + essai + ")");
-      reconnexionEnCours = false;
-      return;
-    } catch (err) { log("Reconnexion ratée : " + (err && err.message)); }
-  }
-  reconnexionEnCours = false;
-  setEtat(false, "Déconnecté");
-  avert("Le robot s'est déconnecté et ne répond plus. Regarde l'écran de la micro:bit : un visage triste suivi d'un nombre veut dire qu'elle a planté. Éteins puis rallume le robot et reconnecte-toi.");
+  rxBuf = ""; derniereDonnee = 0;
+  setEtat(true, device.name ? device.name.replace("BBC micro:bit ", "") : "Connecté");
+  avert("");
 }
 
 async function connecter(){
-  if (connecte && device) { deconnexionVoulue = true; device.gatt.disconnect(); return; }
+  if (connecte && device) { deconnexionVoulue = true; toutArreter(); setTimeout(() => device.gatt.disconnect(), 200); return; }
   deconnexionVoulue = false;
   try {
-    setEtat(false, "Recherche...");
-    device = await navigator.bluetooth.requestDevice({ filters:[{namePrefix:"BBC micro:bit"}], optionalServices:[UART] });
-    log("Robot choisi : " + (device.name || "?"));
+    setEtat(false, "Recherche...", true);
+    device = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: "BBC micro:bit" }], optionalServices: [UART] });
+    device.removeEventListener("gattserverdisconnected", surDeconnexion);
     device.addEventListener("gattserverdisconnected", surDeconnexion);
+    log("Robot choisi : " + (device.name || "?"));
   } catch (err) {
     setEtat(false, "Déconnecté");
     if (err && err.name !== "NotFoundError") avert("Recherche impossible : " + err.message);
     return;
   }
-  let derniere = null;
   for (let essai = 1; essai <= 3; essai++) {
     try {
-      if (essai > 1) { log("Nouvel essai (" + essai + "/3)"); try { device.gatt.disconnect(); } catch (e) {} await new Promise(r => setTimeout(r, 1500)); }
+      if (essai > 1) { try { device.gatt.disconnect(); } catch (e) {} await attendre(1500); }
       await ouvrirLiaison();
-      debutConnexion = performance.now();
-      setEtat(true, device.name || "Connecté");
-      log("Connecté à " + (device.name||"micro:bit"));
-      avert("");
+      log("Connecté");
       return;
-    } catch (err) {
-      derniere = err;
-      log("Échec : " + (err && (err.name + " " + err.message)));
-    }
+    } catch (err) { log("Essai " + essai + " raté : " + (err && err.message)); }
   }
   try { device.gatt.disconnect(); } catch (e) {}
   setEtat(false, "Déconnecté");
-  avert("Connexion impossible après 3 essais : " + (derniere && derniere.message) + ". Éteins puis rallume le robot, vérifie que la localisation du téléphone est activée, puis réessaie. Le détail est dans le Journal en bas de la page.");
+  avert("Connexion impossible. Éteins puis rallume le robot (attends le carré sur l'écran), puis réessaie.");
 }
 
-// Une seule écriture Bluetooth à la fois. Pour le joystick on ne garde que la dernière position.
+async function surDeconnexion(){
+  const etait = connecte;
+  setEtat(false, "Déconnecté"); rx = tx = null; file = []; dernierM = null;
+  arreterJoy();
+  if (!etait) return;
+  log("Robot déconnecté");
+  if (deconnexionVoulue || reconnexionEnCours || !device) return;
+  reconnexionEnCours = true;
+  for (let essai = 1; essai <= 5; essai++) {
+    setEtat(false, "Reconnexion " + essai + "/5", true);
+    await attendre(2000);
+    try { await ouvrirLiaison(); log("Reconnecté"); reconnexionEnCours = false; return; }
+    catch (err) { log("Reconnexion ratée : " + (err && err.message)); }
+  }
+  reconnexionEnCours = false;
+  setEtat(false, "Déconnecté");
+  avert("Le robot ne répond plus. Si son écran montre un losange puis un carré, il a redémarré : reconnecte-toi.");
+}
+
+// Une seule écriture à la fois ; pour les moteurs on ne garde que la dernière consigne
 function envoyer(cmd){
-  if (enregistrement) enregistrement.push([performance.now()-enregistrement.t0, cmd]);
+  if (enregistrement) enregistrement.push([performance.now() - enregistrement.t0, cmd]);
   if (!connecte || !rx) return;
   if (cmd.startsWith("M,")) dernierM = cmd; else file.push(cmd);
   pomper();
@@ -292,150 +370,171 @@ async function pomper(){
       if (file.length) cmd = file.shift(); else { cmd = dernierM; dernierM = null; }
       const octets = new TextEncoder().encode(cmd + "\n");
       for (let i = 0; i < octets.length; i += 20) {
-        const morceau = octets.slice(i, i + 20);
-        if (rx.writeValueWithoutResponse && rx.properties.writeWithoutResponse) await rx.writeValueWithoutResponse(morceau);
-        else await rx.writeValue(morceau);
+        const m = octets.slice(i, i + 20);
+        if (rx.properties.writeWithoutResponse && rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(m);
+        else await rx.writeValue(m);
       }
+      nbEnv++; $("tEnv").textContent = nbEnv;
     }
   } catch (err) { log("Erreur d'envoi : " + err.message); }
   envoiEnCours = false;
 }
 
+// ---------- Infos reçues du robot ----------
+// I,distance,obstacles(2 chiffres),temperature,mode   N,intrusions,commandes recues,tension
+let intrusionsVues = -1;
 function recevoir(t){
   rxBuf += t;
+  if (rxBuf.length > 400) rxBuf = "";
   let i;
   while ((i = rxBuf.indexOf("\n")) >= 0) {
     const ligne = rxBuf.slice(0, i).trim(); rxBuf = rxBuf.slice(i + 1);
+    if (!ligne) continue;
+    if (!derniereDonnee) log("Premières infos du robot : " + ligne);
+    derniereDonnee = performance.now();
     const p = ligne.split(",");
-    if (!recu) { recu = true; log("Premières infos reçues du robot : " + ligne); }
-    if (p[0] === "I" && p.length >= 7) {
+    if (p[0] === "I" && p.length >= 5) {
       const d = +p[1];
-      $("dDist").textContent = d > 0 ? d + " cm" : "--";
-      $("dObs").textContent = (p[2]==="1"?"G ":"· ") + (p[3]==="1"?"D":"·");
-      $("dTemp").textContent = p[4] + " °C";
-      $("dMode").textContent = MODES[+p[5]] || p[5];
-      $("dIntr").textContent = p[6];
-      surlignerMode(+p[5]);
-    } else if (p[0] === "J") {
-      const mv = +p[1];
-      $("dBat").textContent = mv > 0 ? (mv/1000).toFixed(2) + " V" : "--";
-    } else if (p[0] === "H") {
-      log("Robot : allumé depuis " + p[1] + " s");
-    } else if (p[0] === "K") {
-      log("Robot a reçu la commande " + p[1]);
-    } else if (p[0] === "A") {
-      alerte(+p[1]);
+      $("tDist").textContent = d > 0 ? d + " cm" : "--";
+      $("radar").style.width = d > 0 ? Math.min(100, d / 1.5) + "%" : "0";
+      const o = p[2] || "00", g = o[0] === "1", dr = o[1] === "1";
+      $("tObs").textContent = g && dr ? "G+D" : g ? "G" : dr ? "D" : "aucun";
+      $("tTemp").textContent = p[3] + "°";
+      const m = +p[4];
+      $("modeTxt").textContent = "Mode " + (MODES[m] || m);
+      surlignerMode(m);
+    } else if (p[0] === "N" && p.length >= 4) {
+      const n = +p[1];
+      $("tIntr").textContent = n;
+      if (intrusionsVues >= 0 && n > intrusionsVues) alerte(n);
+      intrusionsVues = n;
+      $("tCmd").textContent = p[2];
+      const mv = +p[3];
+      $("tBat").textContent = mv > 0 ? (mv >= 1000 ? (mv / 1000).toFixed(1) + " V" : String(mv)) : "--";
     }
   }
 }
+setInterval(() => {
+  const el = $("direct");
+  if (!connecte) { el.textContent = "Pas connecté"; el.style.color = ""; return; }
+  if (!derniereDonnee) { el.textContent = "En attente des infos du robot..."; el.style.color = "var(--warn)"; return; }
+  const s = (performance.now() - derniereDonnee) / 1000;
+  if (s < 2.5) { el.textContent = "En direct"; el.style.color = "var(--ok)"; }
+  else { el.textContent = "Plus d'infos depuis " + Math.round(s) + " s"; el.style.color = "var(--warn)"; }
+}, 500);
 
 // ---------- Alerte gardien ----------
 let audio = null;
 function bip(){
   try {
     audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-    for (let k = 0; k < 3; k++) {
+    for (let k = 0; k < 4; k++) {
       const o = audio.createOscillator(), g = audio.createGain();
-      o.type = "square"; o.frequency.value = k % 2 ? 660 : 990;
-      g.gain.value = 0.15; o.connect(g); g.connect(audio.destination);
-      o.start(audio.currentTime + k*0.22); o.stop(audio.currentTime + k*0.22 + 0.18);
+      o.type = "square"; o.frequency.value = k % 2 ? 660 : 990; g.gain.value = 0.15;
+      o.connect(g); g.connect(audio.destination);
+      o.start(audio.currentTime + k * 0.22); o.stop(audio.currentTime + k * 0.22 + 0.18);
     }
   } catch (e) {}
 }
 function alerte(n){
-  $("alerteTxt").textContent = "INTRUS DÉTECTÉ · n°" + n;
+  $("alerteTxt").textContent = "Intrusion n°" + n;
   $("alerte").hidden = false;
-  $("dIntr").textContent = n;
-  if (navigator.vibrate) navigator.vibrate([300,120,300,120,300]);
-  bip();
-  log("Alerte gardien : intrusion n°" + n);
+  if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 300]);
+  bip(); log("Alerte gardien : intrusion n°" + n);
 }
 $("alerteOk").onclick = () => { $("alerte").hidden = true; };
 
-// ---------- Joystick ----------
-const joy = $("joy"), knob = $("knob");
-let joyActif = false, derniereEnvoi = 0, enAttente = null;
-function vitesse(){ return +$("vit").value; }
-function moteurs(avant, tourne){ // avant et tourne entre -1 et 1
-  const v = vitesse();
-  let g = Math.round((avant + tourne*0.6) * v), d = Math.round((avant - tourne*0.6) * v);
-  g = Math.max(-100, Math.min(100, g)); d = Math.max(-100, Math.min(100, d));
-  if ($("inv").checked) [g, d] = [d, g];
-  if ($("invAv").checked) { g = -g; d = -d; }
+// ---------- Moteurs : avant/virage vers roues gauche/droite, puis réglages ----------
+function regler(g, d){
+  if (REG.optSwap) [g, d] = [d, g];
+  if (REG.optInvG) g = -g;
+  if (REG.optInvD) d = -d;
+  g = Math.max(-100, Math.min(100, Math.round(g))); d = Math.max(-100, Math.min(100, Math.round(d)));
   return "M," + g + "," + d;
 }
-function envoyerLimite(cmd){
-  const t = performance.now();
-  if (t - derniereEnvoi > 90) { derniereEnvoi = t; envoyer(cmd); }
-  else { clearTimeout(enAttente); enAttente = setTimeout(() => { derniereEnvoi = performance.now(); envoyer(cmd); }, 90); }
+function moteurs(avant, tourne, vitesse){
+  const v = vitesse || REG.vit, k = REG.optSens / 100;
+  let g = (avant + tourne * k) * v, d = (avant - tourne * k) * v;
+  const t = REG.optTrim / 100;
+  if (t > 0) d *= 1 - t; else if (t < 0) g *= 1 + t;
+  return regler(g, d);
 }
+
+// ---------- Joystick (la consigne est répétée tant qu'on touche) ----------
+const joy = $("joy"), knob = $("knob");
+let joyActif = false, consigne = "M,0,0", entretien = null;
 function joyBouge(e){
   const r = joy.getBoundingClientRect();
-  let x = (e.clientX - r.left - r.width/2) / (r.width/2);
-  let y = (e.clientY - r.top - r.height/2) / (r.height/2);
+  let x = (e.clientX - r.left - r.width / 2) / (r.width / 2);
+  let y = (e.clientY - r.top - r.height / 2) / (r.height / 2);
   const n = Math.hypot(x, y); if (n > 1) { x /= n; y /= n; }
-  knob.style.transform = `translate(${x*r.width*0.33}px,${y*r.height*0.33}px)`;
-  envoyerLimite(moteurs(-y, x));
+  knob.style.transform = `translate(${x * r.width * 0.33}px,${y * r.height * 0.33}px)`;
+  const zone = (v) => Math.abs(v) < 0.15 ? 0 : (v - Math.sign(v) * 0.15) / 0.85;
+  consigne = moteurs(zone(-y), zone(x));
 }
-joy.addEventListener("pointerdown", (e) => { joyActif = true; joy.setPointerCapture(e.pointerId); joyBouge(e); });
+function demarrerEntretien(){
+  if (entretien) return;
+  envoyer(consigne);
+  entretien = setInterval(() => envoyer(consigne), 150);
+}
+function arreterJoy(){
+  joyActif = false; joy.classList.remove("actif"); knob.style.transform = "";
+  clearInterval(entretien); entretien = null; consigne = "M,0,0";
+}
+joy.addEventListener("pointerdown", (e) => { if (tilt) return; joyActif = true; joy.classList.add("actif"); joy.setPointerCapture(e.pointerId); joyBouge(e); demarrerEntretien(); });
 joy.addEventListener("pointermove", (e) => { if (joyActif) joyBouge(e); });
-const joyFin = () => { if (!joyActif) return; joyActif = false; knob.style.transform = ""; clearTimeout(enAttente); envoyer("M,0,0"); };
+const joyFin = () => { if (!joyActif) return; arreterJoy(); envoyer("M,0,0"); };
 joy.addEventListener("pointerup", joyFin); joy.addEventListener("pointercancel", joyFin);
-$("vit").oninput = () => { $("vitTxt").textContent = $("vit").value; };
-
-// Les cases d inversion sont mémorisées sur le téléphone
-["inv", "invAv"].forEach(id => {
-  try { $(id).checked = localStorage.getItem("qbit_" + id) === "1"; } catch (e) {}
-  $(id).onchange = () => { try { localStorage.setItem("qbit_" + id, $(id).checked ? "1" : "0"); } catch (e) {} };
-});
 
 // ---------- Pencher le téléphone ----------
 let tilt = false, zero = null;
-function surOrientation(e){
+window.addEventListener("deviceorientation", (e) => {
   if (!tilt || e.beta == null) return;
   if (!zero) zero = { b: e.beta, g: e.gamma };
-  const zone = (v) => Math.abs(v) < 0.12 ? 0 : Math.max(-1, Math.min(1, v));
-  const avant = zone(-(e.beta - zero.b) / 30), tourne = zone((e.gamma - zero.g) / 30);
-  envoyerLimite(moteurs(avant, tourne));
-}
-$("btnTilt").onclick = async () => {
-  if (!tilt && typeof DeviceOrientationEvent !== "undefined" && DeviceOrientationEvent.requestPermission) {
-    try { if (await DeviceOrientationEvent.requestPermission() !== "granted") return; } catch (e) { return; }
-  }
-  tilt = !tilt; zero = null;
-  $("btnTilt").classList.toggle("on", tilt);
-  $("btnTilt").textContent = tilt ? "Pencher : ACTIF" : "Pencher le tél.";
-  if (!tilt) envoyer("M,0,0");
+  const zone = (v) => Math.abs(v) < 0.15 ? 0 : Math.max(-1, Math.min(1, v));
+  consigne = moteurs(zone(-(e.beta - zero.b) / 30), zone((e.gamma - zero.g) / 30));
+});
+function arreterTilt(){ tilt = false; $("btnTilt").classList.remove("on"); $("btnTilt").textContent = "Pencher le téléphone"; }
+$("btnTilt").onclick = () => {
+  if (tilt) { arreterTilt(); arreterJoy(); envoyer("M,0,0"); return; }
+  tilt = true; zero = null; consigne = "M,0,0";
+  $("btnTilt").classList.add("on"); $("btnTilt").textContent = "Pencher : actif";
+  demarrerEntretien();
 };
-window.addEventListener("deviceorientation", surOrientation);
 
-// ---------- Boutons simples ----------
+// ---------- Boutons ----------
 function toutArreter(){
-  tilt = false; $("btnTilt").classList.remove("on"); $("btnTilt").textContent = "Pencher le tél.";
-  arreterLecture();
+  arreterTilt(); arreterJoy(); arreterLecture(); clearInterval(test);
   file = []; dernierM = null;
   envoyer("S");
 }
 $("btnCo").onclick = connecter;
 $("btnStop").onclick = toutArreter;
-$("btnZero").onclick = () => { envoyer("Z"); $("dIntr").textContent = "0"; };
+$("btnStop2").onclick = toutArreter;
+$("btnZero").onclick = () => { envoyer("Z"); intrusionsVues = 0; $("tIntr").textContent = "0"; };
 function surlignerMode(m){ document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("on", +b.dataset.mode === m)); }
 document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { envoyer("P," + b.dataset.mode); surlignerMode(+b.dataset.mode); });
 document.querySelectorAll("[data-cmd]").forEach(b => b.onclick = () => envoyer(b.dataset.cmd));
 
-// Émotions (aperçu 5x5 de ce qui s'affiche sur le robot)
+// Tests des roues : 1 seconde, avec les réglages actuels
+let test = null;
+document.querySelectorAll("[data-test]").forEach(b => b.onclick = () => {
+  clearInterval(test);
+  const t = b.dataset.test;
+  const cmd = t === "g" ? regler(40, 0) : t === "d" ? regler(0, 40) : moteurs(1, 0, 40);
+  let n = 0;
+  envoyer(cmd);
+  test = setInterval(() => { if (++n >= 7) { clearInterval(test); envoyer("M,0,0"); } else envoyer(cmd); }, 150);
+});
+
+// Émotions (aperçu de l'écran du robot)
 const EMOS = [
-  ["Content",".....|.#.#.|.....|#...#|.###."],
-  ["Triste",".....|.#.#.|.....|.###.|#...#"],
-  ["Fâché","#...#|.#.#.|.....|#####|#.#.#"],
-  ["Surpris",".#.#.|.....|..#..|.#.#.|..#.."],
-  ["Cœur",".#.#.|#####|#####|.###.|..#.."],
-  ["Dort",".....|##.##|.....|.###.|....."],
-  ["Pirate",".###.|#.#.#|#####|.###.|.###."],
-  ["OK",".....|....#|...#.|#.#..|.#..."],
-  ["Perdu",".....|.#.#.|.....|.#.#.|#.#.#"],
-  ["Rigolo","#...#|.....|#####|...##|...##"],
-  ["Fantôme","#####|#.#.#|#####|#####|#.#.#"]
+  ["Content", ".....|.#.#.|.....|#...#|.###."], ["Triste", ".....|.#.#.|.....|.###.|#...#"],
+  ["Fâché", "#...#|.#.#.|.....|#####|#.#.#"], ["Surpris", ".#.#.|.....|..#..|.#.#.|..#.."],
+  ["Cœur", ".#.#.|#####|#####|.###.|..#.."], ["Dort", ".....|##.##|.....|.###.|....."],
+  ["Pirate", ".###.|#.#.#|#####|.###.|.###."], ["OK", ".....|....#|...#.|#.#..|.#..."],
+  ["Perdu", ".....|.#.#.|.....|.#.#.|#.#.#"], ["Rigolo", "#...#|.....|#####|...##|...##"],
+  ["Fantôme", "#####|#.#.#|#####|#####|#.#.#"]
 ];
 EMOS.forEach(([nom, motif], i) => {
   const b = document.createElement("button"); b.className = "emo";
@@ -446,24 +545,27 @@ EMOS.forEach(([nom, motif], i) => {
   $("emos").appendChild(b);
 });
 
-// Couleurs des LED du Qbit (valeurs de l'extension : 1 à 9, 0 = éteint)
-const COULEURS = [["Éteint","#2a3540",0],["Rouge","#ff3b30",1],["Orange","#ff9500",2],["Jaune","#ffd60a",3],["Vert","#34c759",4],
-  ["Bleu","#0a84ff",5],["Indigo","#4b3bd6",6],["Violet","#8a2be2",7],["Pourpre","#ff2dd1",8],["Blanc","#ffffff",9]];
-COULEURS.forEach(([nom, hex, n]) => {
-  const b = document.createElement("button"); b.className = "sw"; b.style.background = hex; b.title = nom; b.setAttribute("aria-label", nom);
-  b.onclick = () => envoyer("L," + n); $("sws").appendChild(b);
+// Message (sans accents : l'écran de la micro:bit ne les affiche pas)
+const sansAccents = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\x20-\x7e]/g, "");
+function message(t){ t = sansAccents(t.replace(/[,\n]/g, " ")).trim().slice(0, 30); if (t) { envoyer("T," + t); log("Message : " + t); } }
+$("fTxt").onsubmit = (e) => { e.preventDefault(); message($("txt").value); $("txt").value = ""; };
+["Bonjour", "Coucou", "Je t'aime", "Bravo", "Au revoir"].forEach(t => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.onclick = () => message(t); $("puces").appendChild(b);
 });
-$("fTxt").onsubmit = (e) => { e.preventDefault(); const t = $("txt").value.replace(/[,\n]/g, " ").trim(); if (t) { envoyer("T," + sansAccents(t)); $("txt").value = ""; } };
-function sansAccents(t){ return t.normalize("NFD").replace(/[̀-ͯ]/g, ""); }
 
 // ---------- Chorégraphie ----------
+let enregistrement = null, lecture = null;
 function chargerChore(){ try { return JSON.parse(localStorage.getItem("qbitChore") || "null"); } catch (e) { return null; } }
-function infoChore(){ const c = chargerChore(); $("recInfo").textContent = c && c.length ? "Chorégraphie en mémoire : " + c.length + " mouvements, " + (c[c.length-1][0]/1000).toFixed(1) + " s." : "Appuie sur Enregistrer, pilote le robot, puis appuie à nouveau. Tout est rejoué avec le même rythme."; }
+function infoChore(){
+  const c = chargerChore();
+  $("recInfo").textContent = c && c.length ? "En mémoire : " + (c[c.length - 1][0] / 1000).toFixed(1) + " s de mouvements." : "Appuie sur Enregistrer, pilote le robot, puis reviens appuyer sur Terminer.";
+}
 $("btnRec").onclick = () => {
   if (!enregistrement) {
     arreterLecture();
     enregistrement = []; enregistrement.t0 = performance.now();
     $("btnRec").classList.add("on"); $("btnRec").textContent = "Terminer";
+    onglet("piloter");
   } else {
     const c = enregistrement.slice(); c.push([performance.now() - enregistrement.t0, "M,0,0"]);
     enregistrement = null;
@@ -478,14 +580,14 @@ function jouer(boucle){
   arreterLecture();
   lecture = c.map(([t, cmd]) => setTimeout(() => envoyer(cmd), t));
   $(boucle ? "btnLoop" : "btnPlay").classList.add("on");
-  lecture.push(setTimeout(() => { if (boucle && lecture) jouer(true); else arreterLecture(); }, c[c.length-1][0] + 300));
+  lecture.push(setTimeout(() => { if (boucle && lecture) jouer(true); else arreterLecture(); }, c[c.length - 1][0] + 300));
 }
 $("btnPlay").onclick = () => lecture ? arreterLecture() : jouer(false);
 $("btnLoop").onclick = () => lecture ? arreterLecture() : jouer(true);
 infoChore();
 
-// Sécurité : si la page passe en arrière-plan, on arrête le robot
-document.addEventListener("visibilitychange", () => { if (document.hidden && connecte) { envoyer("M,0,0"); } });
+// Sécurité : si l'appli passe en arrière-plan, on arrête le robot
+document.addEventListener("visibilitychange", () => { if (document.hidden && connecte) toutArreter(); });
 })();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
