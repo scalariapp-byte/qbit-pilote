@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#10161c">
+<title>Qbit Pilote</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout : une console de pilotage verticale, une carte par fonction, le joystick toujours en haut */
+:root{
+  --bg:#10161c; --panel:#18212a; --line:#2a3642; --fg:#e6edf2; --muted:#8a9aa8;
+  --accent:#36c2b4; --accent-ink:#06201d; --warn:#f2a33a; --danger:#ef5b5b; --led:#ff4f3a;
+  --f-display:"Chakra Petch",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 var(--f-body);-webkit-tap-highlight-color:transparent}
+body{padding:env(safe-area-inset-top,0) max(14px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+main{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 4px}
+h1{font:700 1.5rem/1 var(--f-display);letter-spacing:.04em;margin:0}
+h1 small{display:block;font:500 .7rem var(--f-mono);color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+h2{font:700 .8rem var(--f-display);text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+button{font:600 .9rem var(--f-body);color:var(--fg);background:#22303b;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;touch-action:manipulation}
+button:active{transform:scale(.97)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.stop{background:var(--danger);border-color:var(--danger);color:#fff;font-family:var(--f-display);letter-spacing:.1em}
+button:disabled{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.grid{display:grid;gap:8px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+#etat{display:flex;align-items:center;gap:8px;font:500 .8rem var(--f-mono);color:var(--muted)}
+#etat i{width:10px;height:10px;border-radius:50%;background:var(--danger);display:inline-block}
+#etat.ok i{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+#alerte{background:var(--danger);color:#fff;border-radius:14px;padding:14px;font:700 1.1rem var(--f-display);letter-spacing:.06em;display:flex;justify-content:space-between;align-items:center;gap:10px}
+#avert{background:#3a2a12;border:1px solid var(--warn);color:#ffd9a3;border-radius:14px;padding:12px 14px;font-size:.9rem}
+/* Joystick */
+.pad{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:center}
+#joy{width:100%;max-width:230px;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#1d2832 0 55%,#141c23 56%);border:2px solid var(--line);position:relative;touch-action:none;margin:auto}
+#joy::before,#joy::after{content:"";position:absolute;background:var(--line)}
+#joy::before{left:50%;top:10%;bottom:10%;width:1px}
+#joy::after{top:50%;left:10%;right:10%;height:1px}
+#knob{position:absolute;width:34%;height:34%;left:33%;top:33%;border-radius:50%;background:var(--accent);box-shadow:0 0 0 6px rgba(54,194,180,.18);z-index:1;pointer-events:none}
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+label{font-size:.82rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.check{flex-direction:row;align-items:center;gap:8px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+/* Tableau de bord */
+.dash{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dash div{background:#121a21;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.dash b{display:block;font:500 1.15rem var(--f-mono);font-variant-numeric:tabular-nums}
+.dash span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+/* Matrice 5x5 */
+.emo{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px}
+.emo small{font-size:.72rem;color:var(--muted)}
+.mx{display:grid;grid-template-columns:repeat(5,7px);gap:2px}
+.mx i{width:7px;height:7px;border-radius:2px;background:#2a3540}
+.mx i.l{background:var(--led);box-shadow:0 0 4px var(--led)}
+.sw{height:38px;border-radius:10px;border:2px solid var(--line);padding:0}
+#txt{flex:1;min-width:0;font:15px var(--f-body);background:#121a21;color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px}
+#ecoute{font:500 .82rem var(--f-mono);color:var(--muted);min-height:1.3em;margin-top:8px}
+#journal{font:500 .75rem var(--f-mono);color:var(--muted);max-height:90px;overflow:auto;white-space:pre-wrap;margin:8px 0 0}
+.hint{font-size:.8rem;color:var(--muted);margin:8px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Qbit Pilote<small>micro:bit · Bluetooth</small></h1>
+    <div id="etat"><i></i><span>Déconnecté</span></div>
+  </header>
+
+  <div id="avert" hidden></div>
+  <div id="alerte" hidden><span id="alerteTxt">INTRUS DÉTECTÉ</span><button id="alerteOk">OK</button></div>
+
+  <div class="row">
+    <button id="btnCo" class="primary" style="flex:1">Connecter le robot</button>
+    <button id="btnStop" class="stop" style="flex:1">STOP</button>
+  </div>
+
+  <section class="card">
+    <h2>Pilotage</h2>
+    <div class="pad">
+      <div id="joy" aria-label="Joystick"><div id="knob"></div></div>
+      <div class="side">
+        <label>Vitesse <span class="mono" id="vitTxt">50</span><input id="vit" type="range" min="15" max="100" value="50"></label>
+        <button id="btnTilt">Pencher le tél.</button>
+        <label class="check"><input id="inv" type="checkbox"> Inverser G/D</label>
+        <label class="check"><input id="invAv" type="checkbox"> Inverser AV/AR</label>
+      </div>
+    </div>
+    <p class="hint">Glisse le rond, ou active "Pencher le tél." et incline le téléphone comme un volant.</p>
+  </section>
+
+  <section class="card">
+    <h2>Modes</h2>
+    <div class="grid g2">
+      <button data-mode="0">Manuel</button>
+      <button data-mode="1">Animal</button>
+      <button data-mode="2">Gardien</button>
+      <button data-mode="4">Explorateur</button>
+      <button data-mode="3" style="grid-column:span 2">Majordome : arrive et salue</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Tableau de bord</h2>
+    <div class="dash">
+      <div><span>Distance</span><b id="dDist">--</b></div>
+      <div><span>Capteurs IR</span><b id="dObs">--</b></div>
+      <div><span>Temp.</span><b id="dTemp">--</b></div>
+      <div><span>Batterie</span><b id="dBat">--</b></div>
+      <div><span>Mode</span><b id="dMode">--</b></div>
+      <div><span>Intrusions</span><b id="dIntr">0</b></div>
+    </div>
+    <div class="row" style="margin-top:8px"><button id="btnZero">Remettre les intrusions à 0</button></div>
+  </section>
+
+  <section class="card">
+    <h2>Émotions</h2>
+    <div class="grid g4" id="emos"></div>
+  </section>
+
+  <section class="card">
+    <h2>Message</h2>
+    <div class="grid g5" id="sws" hidden style="grid-template-columns:repeat(5,1fr)"></div>
+    <form class="row" id="fTxt">
+      <input id="txt" maxlength="38" placeholder="Texte à faire défiler" autocomplete="off">
+      <button class="primary">Envoyer</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Spectacle</h2>
+    <div class="grid g4">
+      <button data-cmd="B">Révérence</button>
+      <button data-cmd="D,0">Balance</button>
+      <button data-cmd="D,1">Toupie</button>
+      <button data-cmd="D,2">Zigzag</button>
+    </div>
+    <h2 style="margin-top:14px">Chorégraphie</h2>
+    <div class="grid g3">
+      <button id="btnRec">Enregistrer</button>
+      <button id="btnPlay">Rejouer</button>
+      <button id="btnLoop">En boucle</button>
+    </div>
+    <p class="hint" id="recInfo">Appuie sur Enregistrer, pilote le robot, puis appuie à nouveau. Tout est rejoué avec le même rythme.</p>
+  </section>
+
+  <section class="card">
+    <h2>Journal</h2>
+    <pre id="journal"></pre>
+  </section>
+</main>
+
+<script>
+(() => {
+"use strict";
+const UART = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const $ = (id) => document.getElementById(id);
+const MODES = ["Manuel","Animal","Gardien","Majordome","Explorateur"];
+
+let device = null, rx = null, tx = null, connecte = false;
+let file = [], envoiEnCours = false, dernierM = null, rxBuf = "";
+let enregistrement = null, lecture = null, recu = false;
+
+function log(t){ const j=$("journal"); j.textContent = (new Date().toLocaleTimeString()+"  "+t+"\n"+j.textContent).slice(0,3000); }
+function avert(t){ const a=$("avert"); a.textContent=t; a.hidden=!t; }
+
+// ---------- Bluetooth ----------
+if (!("bluetooth" in navigator)) {
+  avert("Ce navigateur ne gère pas le Bluetooth web. Sur Android, ouvre cette page dans Chrome. Sur iPhone, utilise l'application gratuite Bluefy.");
+  $("btnCo").disabled = true;
+}
+
+function setEtat(ok, txt){
+  connecte = ok;
+  $("etat").classList.toggle("ok", ok);
+  $("etat").querySelector("span").textContent = txt;
+  $("btnCo").textContent = ok ? "Déconnecter" : "Connecter le robot";
+}
+
+function delai(promesse, ms, etape){
+  return Promise.race([promesse, new Promise((_, non) => setTimeout(() => non(new Error("délai dépassé à l'étape : " + etape)), ms))]);
+}
+function etape(t){ log(t); $("etat").querySelector("span").textContent = t; }
+
+async function ouvrirLiaison(){
+  etape("1/4 Connexion au robot...");
+  const serveur = await delai(device.gatt.connect(), 12000, "connexion");
+  etape("2/4 Recherche du service UART...");
+  const service = await delai(serveur.getPrimaryService(UART), 8000, "service UART");
+  etape("3/4 Lecture des canaux...");
+  rx = tx = null;
+  for (const c of await delai(service.getCharacteristics(), 8000, "canaux")) {
+    log("Canal " + c.uuid.slice(4, 8) + " : " + ["read","write","writeWithoutResponse","notify","indicate"].filter(k => c.properties[k]).join(" "));
+    if (c.properties.write || c.properties.writeWithoutResponse) rx = c;
+    if (c.properties.indicate || c.properties.notify) tx = c;
+  }
+  if (!rx || !tx) throw new Error("canaux UART introuvables");
+  etape("4/4 Abonnement aux infos du robot...");
+  await delai(tx.startNotifications(), 8000, "abonnement");
+  tx.addEventListener("characteristicvaluechanged", (e) => recevoir(new TextDecoder().decode(e.target.value)));
+}
+
+// Reconnexion automatique si le robot se déconnecte sans qu'on l'ait demandé
+let deconnexionVoulue = false, reconnexionEnCours = false, debutConnexion = 0;
+async function surDeconnexion(){
+  const duree = Math.round((performance.now() - debutConnexion) / 1000);
+  const etaitConnecte = connecte;
+  setEtat(false, "Déconnecté"); rx = tx = null; file = []; dernierM = null;
+  if (!etaitConnecte) return;
+  log("Robot déconnecté après " + duree + " s");
+  if (deconnexionVoulue || reconnexionEnCours || !device) return;
+  reconnexionEnCours = true;
+  for (let essai = 1; essai <= 5; essai++) {
+    setEtat(false, "Reconnexion " + essai + "/5...");
+    await new Promise(r => setTimeout(r, 2500));
+    try {
+      await ouvrirLiaison();
+      debutConnexion = performance.now();
+      setEtat(true, device.name || "Connecté");
+      log("Reconnecté (essai " + essai + ")");
+      reconnexionEnCours = false;
+      return;
+    } catch (err) { log("Reconnexion ratée : " + (err && err.message)); }
+  }
+  reconnexionEnCours = false;
+  setEtat(false, "Déconnecté");
+  avert("Le robot s'est déconnecté et ne répond plus. Regarde l'écran de la micro:bit : un visage triste suivi d'un nombre veut dire qu'elle a planté. Éteins puis rallume le robot et reconnecte-toi.");
+}
+
+async function connecter(){
+  if (connecte && device) { deconnexionVoulue = true; device.gatt.disconnect(); return; }
+  deconnexionVoulue = false;
+  try {
+    setEtat(false, "Recherche...");
+    device = await navigator.bluetooth.requestDevice({ filters:[{namePrefix:"BBC micro:bit"}], optionalServices:[UART] });
+    log("Robot choisi : " + (device.name || "?"));
+    device.addEventListener("gattserverdisconnected", surDeconnexion);
+  } catch (err) {
+    setEtat(false, "Déconnecté");
+    if (err && err.name !== "NotFoundError") avert("Recherche impossible : " + err.message);
+    return;
+  }
+  let derniere = null;
+  for (let essai = 1; essai <= 3; essai++) {
+    try {
+      if (essai > 1) { log("Nouvel essai (" + essai + "/3)"); try { device.gatt.disconnect(); } catch (e) {} await new Promise(r => setTimeout(r, 1500)); }
+      await ouvrirLiaison();
+      debutConnexion = performance.now();
+      setEtat(true, device.name || "Connecté");
+      log("Connecté à " + (device.name||"micro:bit"));
+      avert("");
+      return;
+    } catch (err) {
+      derniere = err;
+      log("Échec : " + (err && (err.name + " " + err.message)));
+    }
+  }
+  try { device.gatt.disconnect(); } catch (e) {}
+  setEtat(false, "Déconnecté");
+  avert("Connexion impossible après 3 essais : " + (derniere && derniere.message) + ". Éteins puis rallume le robot, vérifie que la localisation du téléphone est activée, puis réessaie. Le détail est dans le Journal en bas de la page.");
+}
+
+// Une seule écriture Bluetooth à la fois. Pour le joystick on ne garde que la dernière position.
+function envoyer(cmd){
+  if (enregistrement) enregistrement.push([performance.now()-enregistrement.t0, cmd]);
+  if (!connecte || !rx) return;
+  if (cmd.startsWith("M,")) dernierM = cmd; else file.push(cmd);
+  pomper();
+}
+async function pomper(){
+  if (envoiEnCours) return;
+  envoiEnCours = true;
+  try {
+    while (connecte && rx && (file.length || dernierM)) {
+      let cmd;
+      if (file.length) cmd = file.shift(); else { cmd = dernierM; dernierM = null; }
+      const octets = new TextEncoder().encode(cmd + "\n");
+      for (let i = 0; i < octets.length; i += 20) {
+        const morceau = octets.slice(i, i + 20);
+        if (rx.writeValueWithoutResponse && rx.properties.writeWithoutResponse) await rx.writeValueWithoutResponse(morceau);
+        else await rx.writeValue(morceau);
+      }
+    }
+  } catch (err) { log("Erreur d'envoi : " + err.message); }
+  envoiEnCours = false;
+}
+
+function recevoir(t){
+  rxBuf += t;
+  let i;
+  while ((i = rxBuf.indexOf("\n")) >= 0) {
+    const ligne = rxBuf.slice(0, i).trim(); rxBuf = rxBuf.slice(i + 1);
+    const p = ligne.split(",");
+    if (!recu) { recu = true; log("Premières infos reçues du robot : " + ligne); }
+    if (p[0] === "I" && p.length >= 7) {
+      const d = +p[1];
+      $("dDist").textContent = d > 0 ? d + " cm" : "--";
+      $("dObs").textContent = (p[2]==="1"?"G ":"· ") + (p[3]==="1"?"D":"·");
+      $("dTemp").textContent = p[4] + " °C";
+      $("dMode").textContent = MODES[+p[5]] || p[5];
+      $("dIntr").textContent = p[6];
+      surlignerMode(+p[5]);
+    } else if (p[0] === "J") {
+      const mv = +p[1];
+      $("dBat").textContent = mv > 0 ? (mv/1000).toFixed(2) + " V" : "--";
+    } else if (p[0] === "H") {
+      log("Robot : allumé depuis " + p[1] + " s");
+    } else if (p[0] === "K") {
+      log("Robot a reçu la commande " + p[1]);
+    } else if (p[0] === "A") {
+      alerte(+p[1]);
+    }
+  }
+}
+
+// ---------- Alerte gardien ----------
+let audio = null;
+function bip(){
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    for (let k = 0; k < 3; k++) {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = "square"; o.frequency.value = k % 2 ? 660 : 990;
+      g.gain.value = 0.15; o.connect(g); g.connect(audio.destination);
+      o.start(audio.currentTime + k*0.22); o.stop(audio.currentTime + k*0.22 + 0.18);
+    }
+  } catch (e) {}
+}
+function alerte(n){
+  $("alerteTxt").textContent = "INTRUS DÉTECTÉ · n°" + n;
+  $("alerte").hidden = false;
+  $("dIntr").textContent = n;
+  if (navigator.vibrate) navigator.vibrate([300,120,300,120,300]);
+  bip();
+  log("Alerte gardien : intrusion n°" + n);
+}
+$("alerteOk").onclick = () => { $("alerte").hidden = true; };
+
+// ---------- Joystick ----------
+const joy = $("joy"), knob = $("knob");
+let joyActif = false, derniereEnvoi = 0, enAttente = null;
+function vitesse(){ return +$("vit").value; }
+function moteurs(avant, tourne){ // avant et tourne entre -1 et 1
+  const v = vitesse();
+  let g = Math.round((avant + tourne*0.6) * v), d = Math.round((avant - tourne*0.6) * v);
+  g = Math.max(-100, Math.min(100, g)); d = Math.max(-100, Math.min(100, d));
+  if ($("inv").checked) [g, d] = [d, g];
+  if ($("invAv").checked) { g = -g; d = -d; }
+  return "M," + g + "," + d;
+}
+function envoyerLimite(cmd){
+  const t = performance.now();
+  if (t - derniereEnvoi > 90) { derniereEnvoi = t; envoyer(cmd); }
+  else { clearTimeout(enAttente); enAttente = setTimeout(() => { derniereEnvoi = performance.now(); envoyer(cmd); }, 90); }
+}
+function joyBouge(e){
+  const r = joy.getBoundingClientRect();
+  let x = (e.clientX - r.left - r.width/2) / (r.width/2);
+  let y = (e.clientY - r.top - r.height/2) / (r.height/2);
+  const n = Math.hypot(x, y); if (n > 1) { x /= n; y /= n; }
+  knob.style.transform = `translate(${x*r.width*0.33}px,${y*r.height*0.33}px)`;
+  envoyerLimite(moteurs(-y, x));
+}
+joy.addEventListener("pointerdown", (e) => { joyActif = true; joy.setPointerCapture(e.pointerId); joyBouge(e); });
+joy.addEventListener("pointermove", (e) => { if (joyActif) joyBouge(e); });
+const joyFin = () => { if (!joyActif) return; joyActif = false; knob.style.transform = ""; clearTimeout(enAttente); envoyer("M,0,0"); };
+joy.addEventListener("pointerup", joyFin); joy.addEventListener("pointercancel", joyFin);
+$("vit").oninput = () => { $("vitTxt").textContent = $("vit").value; };
+
+// Les cases d inversion sont mémorisées sur le téléphone
+["inv", "invAv"].forEach(id => {
+  try { $(id).checked = localStorage.getItem("qbit_" + id) === "1"; } catch (e) {}
+  $(id).onchange = () => { try { localStorage.setItem("qbit_" + id, $(id).checked ? "1" : "0"); } catch (e) {} };
+});
+
+// ---------- Pencher le téléphone ----------
+let tilt = false, zero = null;
+function surOrientation(e){
+  if (!tilt || e.beta == null) return;
+  if (!zero) zero = { b: e.beta, g: e.gamma };
+  const zone = (v) => Math.abs(v) < 0.12 ? 0 : Math.max(-1, Math.min(1, v));
+  const avant = zone(-(e.beta - zero.b) / 30), tourne = zone((e.gamma - zero.g) / 30);
+  envoyerLimite(moteurs(avant, tourne));
+}
+$("btnTilt").onclick = async () => {
+  if (!tilt && typeof DeviceOrientationEvent !== "undefined" && DeviceOrientationEvent.requestPermission) {
+    try { if (await DeviceOrientationEvent.requestPermission() !== "granted") return; } catch (e) { return; }
+  }
+  tilt = !tilt; zero = null;
+  $("btnTilt").classList.toggle("on", tilt);
+  $("btnTilt").textContent = tilt ? "Pencher : ACTIF" : "Pencher le tél.";
+  if (!tilt) envoyer("M,0,0");
+};
+window.addEventListener("deviceorientation", surOrientation);
+
+// ---------- Boutons simples ----------
+function toutArreter(){
+  tilt = false; $("btnTilt").classList.remove("on"); $("btnTilt").textContent = "Pencher le tél.";
+  arreterLecture();
+  file = []; dernierM = null;
+  envoyer("S");
+}
+$("btnCo").onclick = connecter;
+$("btnStop").onclick = toutArreter;
+$("btnZero").onclick = () => { envoyer("Z"); $("dIntr").textContent = "0"; };
+function surlignerMode(m){ document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("on", +b.dataset.mode === m)); }
+document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { envoyer("P," + b.dataset.mode); surlignerMode(+b.dataset.mode); });
+document.querySelectorAll("[data-cmd]").forEach(b => b.onclick = () => envoyer(b.dataset.cmd));
+
+// Émotions (aperçu 5x5 de ce qui s'affiche sur le robot)
+const EMOS = [
+  ["Content",".....|.#.#.|.....|#...#|.###."],
+  ["Triste",".....|.#.#.|.....|.###.|#...#"],
+  ["Fâché","#...#|.#.#.|.....|#####|#.#.#"],
+  ["Surpris",".#.#.|.....|..#..|.#.#.|..#.."],
+  ["Cœur",".#.#.|#####|#####|.###.|..#.."],
+  ["Dort",".....|##.##|.....|.###.|....."],
+  ["Pirate",".###.|#.#.#|#####|.###.|.###."],
+  ["OK",".....|....#|...#.|#.#..|.#..."],
+  ["Perdu",".....|.#.#.|.....|.#.#.|#.#.#"],
+  ["Rigolo","#...#|.....|#####|...##|...##"],
+  ["Fantôme","#####|#.#.#|#####|#####|#.#.#"]
+];
+EMOS.forEach(([nom, motif], i) => {
+  const b = document.createElement("button"); b.className = "emo";
+  const mx = document.createElement("div"); mx.className = "mx";
+  motif.replace(/\|/g, "").split("").forEach(c => { const p = document.createElement("i"); if (c === "#") p.className = "l"; mx.appendChild(p); });
+  const s = document.createElement("small"); s.textContent = nom;
+  b.append(mx, s); b.onclick = () => envoyer("E," + i);
+  $("emos").appendChild(b);
+});
+
+// Couleurs des LED du Qbit (valeurs de l'extension : 1 à 9, 0 = éteint)
+const COULEURS = [["Éteint","#2a3540",0],["Rouge","#ff3b30",1],["Orange","#ff9500",2],["Jaune","#ffd60a",3],["Vert","#34c759",4],
+  ["Bleu","#0a84ff",5],["Indigo","#4b3bd6",6],["Violet","#8a2be2",7],["Pourpre","#ff2dd1",8],["Blanc","#ffffff",9]];
+COULEURS.forEach(([nom, hex, n]) => {
+  const b = document.createElement("button"); b.className = "sw"; b.style.background = hex; b.title = nom; b.setAttribute("aria-label", nom);
+  b.onclick = () => envoyer("L," + n); $("sws").appendChild(b);
+});
+$("fTxt").onsubmit = (e) => { e.preventDefault(); const t = $("txt").value.replace(/[,\n]/g, " ").trim(); if (t) { envoyer("T," + sansAccents(t)); $("txt").value = ""; } };
+function sansAccents(t){ return t.normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+
+// ---------- Chorégraphie ----------
+function chargerChore(){ try { return JSON.parse(localStorage.getItem("qbitChore") || "null"); } catch (e) { return null; } }
+function infoChore(){ const c = chargerChore(); $("recInfo").textContent = c && c.length ? "Chorégraphie en mémoire : " + c.length + " mouvements, " + (c[c.length-1][0]/1000).toFixed(1) + " s." : "Appuie sur Enregistrer, pilote le robot, puis appuie à nouveau. Tout est rejoué avec le même rythme."; }
+$("btnRec").onclick = () => {
+  if (!enregistrement) {
+    arreterLecture();
+    enregistrement = []; enregistrement.t0 = performance.now();
+    $("btnRec").classList.add("on"); $("btnRec").textContent = "Terminer";
+  } else {
+    const c = enregistrement.slice(); c.push([performance.now() - enregistrement.t0, "M,0,0"]);
+    enregistrement = null;
+    try { localStorage.setItem("qbitChore", JSON.stringify(c)); } catch (e) {}
+    $("btnRec").classList.remove("on"); $("btnRec").textContent = "Enregistrer";
+    infoChore();
+  }
+};
+function arreterLecture(){ if (lecture) { lecture.forEach(clearTimeout); lecture = null; } $("btnPlay").classList.remove("on"); $("btnLoop").classList.remove("on"); }
+function jouer(boucle){
+  const c = chargerChore(); if (!c || !c.length) { infoChore(); return; }
+  arreterLecture();
+  lecture = c.map(([t, cmd]) => setTimeout(() => envoyer(cmd), t));
+  $(boucle ? "btnLoop" : "btnPlay").classList.add("on");
+  lecture.push(setTimeout(() => { if (boucle && lecture) jouer(true); else arreterLecture(); }, c[c.length-1][0] + 300));
+}
+$("btnPlay").onclick = () => lecture ? arreterLecture() : jouer(false);
+$("btnLoop").onclick = () => lecture ? arreterLecture() : jouer(true);
+infoChore();
+
+// Sécurité : si la page passe en arrière-plan, on arrête le robot
+document.addEventListener("visibilitychange", () => { if (document.hidden && connecte) { envoyer("M,0,0"); } });
+})();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
